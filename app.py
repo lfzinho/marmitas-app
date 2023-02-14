@@ -14,7 +14,7 @@ def initialize_app():
     db = firestore.client()
     return db
 
-marmitas = pd.read_csv("marmitas.csv")
+marmitas = pd.read_csv("marmitas.csv", sep="; ")
 db = initialize_app()
 
 st.title("Marmitas 🥕")
