@@ -57,7 +57,7 @@ if confirm_btn:
 
 if lot_btn:
     tab_lot.info(f"Data do lote: {date}")
-    tab_lot.button("Pedidos do lote:")
+    tab_lot.write("Pedidos do lote:")
     # Get data from firestore
     docs = db.collection(date.strftime('%d-%m-%Y')).stream()
     # Create a dataframe from the data
@@ -68,8 +68,21 @@ if lot_btn:
     df = pd.DataFrame({"Pratos":df})
     df = df["Pratos"].value_counts(sort=True)
     df = df.to_frame()
-    tab_lot.write(df.to_string())
-    # Add the document id to the dataframe
-    # df["id"] = [doc.id for doc in docs]
     # Show the dataframe
+    tab_lot.dataframe(df)
+
+    # Add filter by name
+    name_filter = tab_lot.text_input("Filtrar por nome:")
+    filter_btn = tab_lot.button("Filtrar")
+
+if filter_btn:
+    docs = db.collection(date.strftime('%d-%m-%Y')).stream()
+    df = []
+    for doc in docs:
+        if name_filter in doc.id:
+            for doc_item in doc.to_dict().get("pedido"):
+                df.append(doc_item)
+    df = pd.DataFrame({"Pratos":df})
+    df = df["Pratos"].value_counts(sort=True)
+    df = df.to_frame()
     tab_lot.dataframe(df)
