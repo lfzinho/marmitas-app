@@ -66,7 +66,8 @@ if lot_btn:
         for doc_item in doc.to_dict().items():
             df.append(doc_item)
     df = pd.DataFrame(df)
-    df = df.value_counts(sort=True).to_frame()
+    df = df.value_counts(sort=True)
+    df = df.to_frame()
     # Add the document id to the dataframe
     # df["id"] = [doc.id for doc in docs]
     # Show the dataframe
