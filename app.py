@@ -81,7 +81,7 @@ if filter_btn:
     docs = db.collection(date.strftime('%d-%m-%Y')).stream()
     df = []
     for doc in docs:
-        tab_lot.write(doc.id)
+        # tab_lot.write(doc.id)
         if name_filter in doc.id:
             for doc_item in doc.to_dict().get("pedido"):
                 df.append(doc_item)
@@ -89,4 +89,3 @@ if filter_btn:
     df = df["Quantidade"].value_counts(sort=True)
     df = df.to_frame()
     tab_lot.dataframe(df)
-    
