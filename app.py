@@ -19,7 +19,7 @@ db = initialize_app()
 
 st.title("Marmitas 🥕")
 
-tab_menu, tab_order = st.tabs(["Menu", "Pedido"])
+tab_menu, tab_order, tab_lot = st.tabs(["Menu", "Pedido", "Lote"])
 
 tab_menu.write("Aqui você pode ver os sabores disponíveis:")
 tab_menu.dataframe(marmitas)
@@ -34,6 +34,10 @@ with tab_order.form("order"):
 
     confirm_btn = st.form_submit_button("Confirmar pedido")
     
+with tab_lot.form("lot"):
+    date = st.date_input("Escolha a data do lote:")
+    lot_btn = st.form_submit_button("Confirmar data")
+
 def send_order():
     st.success("Pedido enviado com sucesso!")
     st.markdown("**Se você quiser fazer outro pedido, recarregue a página.**")
@@ -50,3 +54,15 @@ if confirm_btn:
     Data: {date} \n
     """)
     tab_order.button("Enviar pedido", on_click=send_order)
+
+if lot_btn:
+    tab_lot.info(f"Data do lote: {date}")
+    tab_lot.button("Pedidos do lote:")
+    # Get data from firestore
+    docs = db.collection(date.strftime('%d-%m-%Y')).stream()
+    # Create a dataframe from the data
+    df = pd.DataFrame([doc.to_dict() for doc in docs])
+    # Add the document id to the dataframe
+    # df["id"] = [doc.id for doc in docs]
+    # Show the dataframe
+    tab_lot.dataframe(df)
