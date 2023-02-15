@@ -63,7 +63,7 @@ if lot_btn:
     # Create a dataframe from the data
     df = []
     for doc in docs:
-        for doc_item in doc.to_dict().items():
+        for doc_item in doc.to_dict().get("pedido"):
             df.append(doc_item)
     df = pd.DataFrame({"Pratos":df})
     df = df["Pratos"].value_counts(sort=True)
