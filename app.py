@@ -37,7 +37,7 @@ with tab_order.form("order"):
 with tab_lot.form("lot"):
     date = st.date_input("Escolha a data do lote:")
     lot_btn = st.form_submit_button("Confirmar data")
-    
+
     # Add filter by name
     name_filter = tab_lot.text_input("Filtrar por nome:")
     filter_btn = tab_lot.button("Filtrar")
@@ -69,8 +69,8 @@ if lot_btn:
     for doc in docs:
         for doc_item in doc.to_dict().get("pedido"):
             df.append(doc_item)
-    df = pd.DataFrame({"Pratos":df})
-    df = df["Pratos"].value_counts(sort=True)
+    df = pd.DataFrame({"Quantidade":df})
+    df = df["Quantidade"].value_counts(sort=True)
     df = df.to_frame()
     # Show the dataframe
     tab_lot.dataframe(df)
@@ -81,10 +81,12 @@ if filter_btn:
     docs = db.collection(date.strftime('%d-%m-%Y')).stream()
     df = []
     for doc in docs:
+        tab_lot.write(doc.id)
         if name_filter in doc.id:
             for doc_item in doc.to_dict().get("pedido"):
                 df.append(doc_item)
-    df = pd.DataFrame({"Pratos":df})
-    df = df["Pratos"].value_counts(sort=True)
+    df = pd.DataFrame({"Quantidade":df})
+    df = df["Quantidade"].value_counts(sort=True)
     df = df.to_frame()
     tab_lot.dataframe(df)
+    
