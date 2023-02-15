@@ -37,7 +37,6 @@ with tab_order.form("order"):
 with tab_lot.form("lot"):
     date = st.date_input("Escolha a data do lote:")
     lot_btn = st.form_submit_button("Confirmar data")
-
     # Add filter by name
     name_filter = tab_lot.text_input("Filtrar por nome:")
     filter_btn = tab_lot.button("Filtrar")
@@ -78,6 +77,9 @@ if lot_btn:
     
 
 if filter_btn:
+    tab_lot.info(f"Data do lote: {date}")
+    tab_lot.info(f"Pedido dx: {name_filter}")
+    tab_lot.write("Pedidos do lote:")
     docs = db.collection(date.strftime('%d-%m-%Y')).stream()
     df = []
     for doc in docs:
