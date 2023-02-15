@@ -61,7 +61,12 @@ if lot_btn:
     # Get data from firestore
     docs = db.collection(date.strftime('%d-%m-%Y')).stream()
     # Create a dataframe from the data
-    df = pd.DataFrame([doc.to_dict() for doc in docs])
+    df = []
+    for doc in docs:
+        for doc_item in doc.to_dict().items():
+            df.append(doc_item)
+    df = pd.DataFrame(df)
+    df = df.value_counts(sort=True).to_frame()
     # Add the document id to the dataframe
     # df["id"] = [doc.id for doc in docs]
     # Show the dataframe
