@@ -68,7 +68,7 @@ if lot_btn:
     df = pd.DataFrame({"Pratos":df})
     df = df["Pratos"].value_counts(sort=True)
     df = df.to_frame()
-    tab_lot.write(df)
+    tab_lot.write(df.to_string())
     # Add the document id to the dataframe
     # df["id"] = [doc.id for doc in docs]
     # Show the dataframe
