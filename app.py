@@ -37,6 +37,10 @@ with tab_order.form("order"):
 with tab_lot.form("lot"):
     date = st.date_input("Escolha a data do lote:")
     lot_btn = st.form_submit_button("Confirmar data")
+    
+    # Add filter by name
+    name_filter = tab_lot.text_input("Filtrar por nome:")
+    filter_btn = tab_lot.button("Filtrar")
 
 def send_order():
     st.success("Pedido enviado com sucesso!")
@@ -71,9 +75,7 @@ if lot_btn:
     # Show the dataframe
     tab_lot.dataframe(df)
 
-    # Add filter by name
-    name_filter = tab_lot.text_input("Filtrar por nome:")
-    filter_btn = tab_lot.button("Filtrar")
+    
 
 if filter_btn:
     docs = db.collection(date.strftime('%d-%m-%Y')).stream()
