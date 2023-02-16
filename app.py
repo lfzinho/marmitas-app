@@ -35,7 +35,7 @@ with tab_order.form("order"):
     confirm_btn = st.form_submit_button("Confirmar pedido")
     
 with tab_lot.form("lot"):
-    date = st.date_input("Escolha a data do lote:")
+    date_lot = st.date_input("Escolha a data do lote:")
     lot_btn = st.form_submit_button("Confirmar data")
     # Add filter by name
     name_filter = tab_lot.text_input("Filtrar por nome:")
@@ -59,10 +59,10 @@ if confirm_btn:
     tab_order.button("Enviar pedido", on_click=send_order)
 
 if lot_btn:
-    tab_lot.info(f"Data do lote: {date}")
+    tab_lot.info(f"Data do lote: {date_lot}")
     tab_lot.write("Pedidos do lote:")
     # Get data from firestore
-    docs = db.collection(date.strftime('%d-%m-%Y')).stream()
+    docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
     # Create a dataframe from the data
     df = []
     for doc in docs:
@@ -79,10 +79,10 @@ if lot_btn:
     
 
 if filter_btn:
-    tab_lot.info(f"Data do lote: {date}")
+    tab_lot.info(f"Data do lote: {date_lot}")
     tab_lot.info(f"Pedido dx: {name_filter}")
     tab_lot.write("Pedidos do lote:")
-    docs = db.collection(date.strftime('%d-%m-%Y')).stream()
+    docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
     df = []
     for doc in docs:
         # tab_lot.write(doc.id)
