@@ -73,6 +73,8 @@ if lot_btn:
     df = df.to_frame()
     # Show the dataframe
     tab_lot.dataframe(df)
+    # Show total
+    tab_lot.write(f"Total: {df['Quantidade'].sum()}")
 
     
 
@@ -91,3 +93,4 @@ if filter_btn:
     df = df["Quantidade"].value_counts(sort=True)
     df = df.to_frame()
     tab_lot.dataframe(df)
+    tab_lot.write(f"Total: {df['Quantidade'].sum()}")
