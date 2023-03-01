@@ -70,9 +70,9 @@ with tab_feed:
                 pedido_format = ', \n\n'.join(post["pedido"])
                 st.markdown(pedido_format)
                 st.caption(f"***Data: {post['date']}***")
-                if st.button(f"👍 {post['likes']}"):
-                    db.collection("feed").document(doc["person"]+doc["collection"]).update({"likes": post["likes"] + 1})
-                    st.info("+1", icon="👍")
+                # if st.button(f"👍 {post['likes']}"):
+                #     db.collection("feed").document(doc["person"]+doc["collection"]).update({"likes": post["likes"] + 1})
+                #     st.info("+1", icon="👍")
                 st.caption(f"*{post['time']}*")
 
 def send_order():
