@@ -61,7 +61,7 @@ with tab_feed:
                 continue
             doc_dict["person"] = doc["person"]
             doc_dict["date"] = doc["collection"]
-            doc_dict["time"] = doc["time"]
+            doc_dict["time"] = doc["time"] - datetime.timedelta(hours=3)
             doc_dict["likes"] = doc["likes"]
             posts.append(doc_dict)
         
@@ -70,10 +70,19 @@ with tab_feed:
                 pedido_format = ', \n\n'.join(post["pedido"])
                 st.markdown(pedido_format)
                 st.caption(f"***Data: {post['date']}***")
-                if st.button(f"👍 {post['likes']}"):
-                    db.collection("feed").document(doc["person"]+doc["collection"]).update({"likes": post["likes"] + 1})
-                    st.info("+1", icon="👍")
-                st.caption(f"*{post['time']}*")
+                st.session_state[post["person"]+post["date"]+"_state"] = post["likes"]
+                col1, col2 = st.columns([1, 10])
+
+                # like button
+                if col1.button("👍", key=post["person"]+post["date"]):
+                    st.session_state[post["person"]+post["date"]+"_state"] += 1
+                    db.collection("feed").document(post["person"]+post["date"]).update({"likes": post["likes"] + 1})
+                    st.balloons()
+                
+                # number of likes
+                n_curtidas = st.session_state[post['person']+post['date']+ '_state']
+                col2.write(f" {n_curtidas} {'curtida' if n_curtidas <= 1 else 'curtidas'}")
+                st.caption(f"*{post['time'].strftime('%d/%m/%Y, %H:%M:%S')}*")
 
 def send_order():
     st.success("Pedido enviado com sucesso!")
