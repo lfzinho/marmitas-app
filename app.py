@@ -17,14 +17,22 @@ def initialize_app():
 marmitas = pd.read_csv("marmitas.csv", sep=";")
 db = initialize_app()
 
-st.title("Marmitas 🥕")
+st.title("🥕 Marmitas")
 
-tab_menu, tab_order, tab_lot = st.tabs(["Menu", "Pedido", "Lote"])
+tab_menu, tab_feed, tab_order, tab_lot = st.tabs(["🥦 Menu", "✨ Feed", "📝 Pedido", "⚙️ Lote"])
 
 tab_menu.write("Aqui você pode ver os sabores disponíveis:")
 tab_menu.dataframe(marmitas)
 
+with tab_order.expander("❔ Instruções"):
+    st.markdown("""1. Digite seu nome no campo de texto.
+2. Escolha os sabores que deseja.
+3. Escolha a data que deseja receber a marmita.
+4. Clique em "Confirmar pedido".
+5. Confirme o pedido.
+6. Recarregue a página para fazer outro pedido.""")
 with tab_order.form("order"):
+
     name = st.text_input("Digite seu nome:")
     # multiplica os sabores disponíveis por 5
     options = marmitas["sabores"].tolist() * 5
@@ -36,10 +44,36 @@ with tab_order.form("order"):
     
 with tab_lot.form("lot"):
     date_lot = st.date_input("Escolha a data do lote:")
-    lot_btn = st.form_submit_button("Confirmar data")
-    # Add filter by name
-    name_filter = tab_lot.text_input("Filtrar por nome:")
-    filter_btn = tab_lot.button("Filtrar")
+    name_filter = st.text_input("Filtrar por nome:")
+    lot_btn = st.form_submit_button("Filtrar lote")
+
+with tab_feed:
+    docs = db.collection("feed").order_by("time", direction=firestore.Query.DESCENDING).limit(30).get()
+    if not docs:
+        st.markdown('<div style="text-align: center;">Nenhum pedido ainda. 😿</div>', unsafe_allow_html=True)
+    else:
+        posts = []
+        for doc in docs:
+            doc = doc.to_dict()
+            original_doc = db.collection(doc["collection"]).document(doc["person"]).get()
+            doc_dict = original_doc.to_dict()
+            if doc_dict is None: # if the original post was deleted
+                continue
+            doc_dict["person"] = doc["person"]
+            doc_dict["date"] = doc["collection"]
+            doc_dict["time"] = doc["time"]
+            doc_dict["likes"] = doc["likes"]
+            posts.append(doc_dict)
+        
+        for post in posts:
+            with st.expander(post["person"], expanded=True):
+                pedido_format = ', \n\n'.join(post["pedido"])
+                st.markdown(pedido_format)
+                st.caption(f"***Data: {post['date']}***")
+                if st.button(f"👍 {post['likes']}"):
+                    db.collection("feed").document(doc["person"]+doc["collection"]).update({"likes": post["likes"] + 1})
+                    st.info("+1", icon="👍")
+                st.caption(f"*{post['time']}*")
 
 def send_order():
     st.success("Pedido enviado com sucesso!")
@@ -48,21 +82,33 @@ def send_order():
     db.collection(date.strftime('%d-%m-%Y')).document(name).set({
         "pedido": choices
     })
-
+    # sends to feed
+    db.collection("feed").document(name+date.strftime('%d-%m-%Y')).set({
+        "collection":date.strftime('%d-%m-%Y'),
+        "person":name,
+        "time": firebase_admin.firestore.SERVER_TIMESTAMP,
+        "likes": 1,
+    })
 
 if confirm_btn:
+    choices_format = ', \n\n'.join(choices)
     tab_order.info(f"""Seu pedido é: \n
-    Nome: {name} \n
-    Sabores: {', '.join(choices)} \n
-    Data: {date} \n
-    """)
+Nome: {name} \n
+Sabores: \n\n {choices_format} \n
+Data: {date} \n
+""")
     tab_order.button("Enviar pedido", on_click=send_order)
 
 if lot_btn:
-    tab_lot.info(f"Data do lote: {date_lot}")
-    tab_lot.write("Pedidos do lote:")
     # Get data from firestore
-    docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
+    if name_filter == "": # if no name is given, show all
+        tab_lot.info(f"Data do lote: {date_lot}")
+        docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
+    else: # if a name is given, show only that name
+        tab_lot.info(f"Data do lote: {date_lot} \n\nPedido de: {name_filter}")
+        docs = [db.collection(date_lot.strftime('%d-%m-%Y')).document(name_filter).get()]
+
+    tab_lot.write("Pedidos do lote:")
     # Create a dataframe from the data
     df = []
     for doc in docs:
@@ -74,23 +120,4 @@ if lot_btn:
     # Show the dataframe
     tab_lot.dataframe(df)
     # Show total
-    tab_lot.write(f"Total: {df['Quantidade'].sum()}")
-
-    
-
-if filter_btn:
-    tab_lot.info(f"Data do lote: {date_lot}")
-    tab_lot.info(f"Pedido dx: {name_filter}")
-    tab_lot.write("Pedidos do lote:")
-    docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
-    df = []
-    for doc in docs:
-        # tab_lot.write(doc.id)
-        if name_filter in doc.id:
-            for doc_item in doc.to_dict().get("pedido"):
-                df.append(doc_item)
-    df = pd.DataFrame({"Quantidade":df})
-    df = df["Quantidade"].value_counts(sort=True)
-    df = df.to_frame()
-    tab_lot.dataframe(df)
     tab_lot.write(f"Total: {df['Quantidade'].sum()}")
