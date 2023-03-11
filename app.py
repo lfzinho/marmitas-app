@@ -44,7 +44,6 @@ with tab_order.form("order"):
     
 with tab_lot.form("lot"):
     date_lot = st.date_input("Escolha a data do lote:")
-    name_filter = st.text_input("Filtrar por nome:")
     lot_btn = st.form_submit_button("Filtrar lote")
 
 with tab_feed:
@@ -109,13 +108,10 @@ Data: {date} \n
     tab_order.button("Enviar pedido", on_click=send_order)
 
 if lot_btn:
-    # Get data from firestore
-    if name_filter == "": # if no name is given, show all
-        tab_lot.info(f"Data do lote: {date_lot}")
-        docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
-    else: # if a name is given, show only that name
-        tab_lot.info(f"Data do lote: {date_lot} \n\nPedido de: {name_filter}")
-        docs = [db.collection(date_lot.strftime('%d-%m-%Y')).document(name_filter).get()]
+    # Show all orders from the selected date
+    tab_lot.info(f"Data do lote: {date_lot}")
+    docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
+
 
     tab_lot.write("Pedidos do lote:")
     # Create a dataframe from the data
@@ -130,3 +126,18 @@ if lot_btn:
     tab_lot.dataframe(df)
     # Show total
     tab_lot.write(f"Total: {df['Quantidade'].sum()}")
+
+    # Show the orders by name
+    tab_lot.write("Pedidos por nome:")
+    docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
+    if not docs:
+        st.markdown('<div style="text-align: center;">Nenhum pedido ainda. 😿</div>', unsafe_allow_html=True)
+    else:
+        for doc in docs:
+            name = doc.id
+            doc = doc.to_dict()
+            with st.expander(name, expanded=False):
+                pedido_format = ', \n\n'.join(doc["pedido"])
+                st.markdown(pedido_format)
+
+
