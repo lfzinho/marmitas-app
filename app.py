@@ -44,7 +44,7 @@ with tab_order.form("order"):
     
 with tab_lot.form("lot"):
     date_lot = st.date_input("Escolha a data do lote:")
-    lot_btn = st.form_submit_button("Filtrar lote")
+    lot_btn = st.form_submit_button("Ver pedidos")
 
 with tab_feed:
     docs = db.collection("feed").order_by("time", direction=firestore.Query.DESCENDING).limit(30).get()
