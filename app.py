@@ -131,12 +131,12 @@ if lot_btn:
     tab_lot.write("Pedidos por nome:")
     docs = db.collection(date_lot.strftime('%d-%m-%Y')).stream()
     if not docs:
-        st.markdown('<div style="text-align: center;">Nenhum pedido ainda. 😿</div>', unsafe_allow_html=True)
+        tab_lot.markdown('<div style="text-align: center;">Nenhum pedido ainda. 😿</div>', unsafe_allow_html=True)
     else:
         for doc in docs:
             name = doc.id
             doc = doc.to_dict()
-            with st.expander(name, expanded=False):
+            with tab_lot.expander(name, expanded=False):
                 pedido_format = ', \n\n'.join(doc["pedido"])
                 st.markdown(pedido_format)
 
