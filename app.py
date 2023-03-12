@@ -36,7 +36,7 @@ with tab_order.form("order"):
     name = st.text_input("Digite seu nome:")
     # multiplica os sabores disponíveis por 5
     options = marmitas["sabores"].tolist() * 5
-    choices = st.multiselect("Escolha os sabores:", options, max_selections=5)
+    choices = st.multiselect("Escolha os sabores:", options, max_selections=5, default=st.session_state.get("choices", []))
     date = st.date_input("Escolha a data:", min_value=datetime.date.today())
 
     confirm_btn = st.form_submit_button("Confirmar pedido")
@@ -69,7 +69,7 @@ with tab_feed:
                 st.markdown(pedido_format)
                 st.caption(f"***Data: {post['date']}***")
                 st.session_state[post["person"]+post["date"]+"_state"] = post["likes"]
-                col1, col2 = st.columns([1, 10])
+                col1, col2, col3 = st.columns([1, 10, 3])
 
                 # like button
                 if col1.button("👍", key=post["person"]+post["date"]):
@@ -81,6 +81,11 @@ with tab_feed:
                 n_curtidas = st.session_state[post['person']+post['date']+ '_state']
                 col2.write(f" {n_curtidas} {'curtida' if n_curtidas <= 1 else 'curtidas'}")
                 st.caption(f"*{post['time'].strftime('%d/%m/%Y, %H:%M:%S')}*")
+
+                # Copy order button
+                if col3.button("Copiar pedido", key=post["person"]+post["date"]+"_copy"):
+                    st.session_state["choices"] = list(post["pedido"])
+                    st.success("Pedido copiado! Vá para a aba 📝 Pedido para finalizar.")
 
 def send_order():
     st.success("Pedido enviado com sucesso!")
@@ -105,6 +110,12 @@ Sabores: \n\n {choices_format} \n
 Data: {date} \n
 """)
     tab_order.button("Enviar pedido", on_click=send_order)
+
+def orders_to_df(orders):
+    df = pd.DataFrame({"Quantidade":orders})
+    df = df["Quantidade"].value_counts(sort=True)
+    df = df.to_frame()
+    return df
 
 if lot_btn:
     # Show all orders from the selected date
@@ -134,10 +145,10 @@ if lot_btn:
     else:
         for doc in docs:
             name = doc.id
-            doc = doc.to_dict()
-            title = f"{name}, {len(doc['pedido'])}"
+            count = len(doc.to_dict()["pedido"])
+            orders = doc.to_dict()["pedido"]
+            title = f"{name}, {count}"
             with tab_lot.expander(title, expanded=False):
-                pedido_format = ', \n\n'.join(doc["pedido"])
-                st.markdown(pedido_format)
+                st.dataframe(orders_to_df(doc["pedido"]))
 
 
