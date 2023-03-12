@@ -39,7 +39,6 @@ with tab_order.form("order"):
     choices = st.multiselect("Escolha os sabores:", options, max_selections=5)
     date = st.date_input("Escolha a data:", min_value=datetime.date.today())
 
-
     confirm_btn = st.form_submit_button("Confirmar pedido")
     
 with tab_lot.form("lot"):
@@ -136,7 +135,8 @@ if lot_btn:
         for doc in docs:
             name = doc.id
             doc = doc.to_dict()
-            with tab_lot.expander(name, expanded=False):
+            title = f"{name}, {len(doc['pedido'])}"
+            with tab_lot.expander(title, expanded=False):
                 pedido_format = ', \n\n'.join(doc["pedido"])
                 st.markdown(pedido_format)
 
