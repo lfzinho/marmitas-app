@@ -150,5 +150,5 @@ if lot_btn:
             title = f"{name}, {count}"
             with tab_lot.expander(title, expanded=False):
                 st.dataframe(orders_to_df(doc.to_dict()["pedido"]))
-
+ 
 
